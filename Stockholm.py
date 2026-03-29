@@ -65,6 +65,11 @@ def main():
     #Add draw function
     Draw(export=False).add_to(m)
 
+    #Add lat, lon popup
+    m.add_child(
+        folium.ClickForLatLng(format_str='lat + "," + lng ', alert=True)
+    )
+
 
     #map generation
     print("sucessfully generated map.")
@@ -232,23 +237,23 @@ def stations(m):
     
     # plop hiding zones
     all_station = pd.concat([metro_stations,tram_stations])
+    hiding_zone = folium.FeatureGroup(name="Hiding Zone", show=False)
 
-    station_meter = all_station.to_crs(epsg=28992)
-    station_buffers = station_meter.copy()
-    station_buffers.geometry = station_buffers.geometry.buffer(250)
-    station_buffers = station_buffers.to_crs(epsg=4326)
+    for idx, row in all_station.iterrows():
+        hidingZones(hiding_zone,250,row.geometry.y,row.geometry.x)
 
-    folium.GeoJson(
-        station_buffers,
-        name="Hiding Zones",
-        style_function=lambda feature: {
-            'fillColor': "#5F5F5F", 
-            'color': '#5F5F5F',
-            'weight': 0.5,              
-            'fillOpacity': 0.3     
-        },
-        show=False 
-    ).add_to(m)
+    hiding_zone.add_to(m)
+
+def hidingZones(group,radius,lat,long):
+    folium.Circle(
+        location=[lat, long],
+        radius=radius,
+        color = '#5F5F5F',
+        weight=0.5,
+        fill_color = '#5F5F5F',
+        fill_opacity=0.3,
+        show=False,
+    ).add_to(group)
 
 def radar(m):
     #GPS function for radars

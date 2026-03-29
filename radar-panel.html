@@ -11,7 +11,7 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     font-weight: bold;
     cursor: pointer;
-"> Radar Menu</button>
+">Radar Menu</button>
 
 <div id="radarPanel" style="
         display: None;
@@ -33,16 +33,19 @@
                
         <input type="number" id="radarSize" placeholder="km" step="any" 
                style="width: 100%; margin-bottom: 8px; padding: 8px; font-size: 16px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
+        
+            
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <input type="radio" id="fillRadar" name="radar_type" value="fill" checked style="margin: 0; cursor: pointer;">
+                <label for="fillRadar" style="font-size: 14px; color: #333; cursor: pointer; margin: 0;">Fill Radar</label>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <input type="radio" id="invertRadar" name="radar_type" value="invert" style="margin: 0; cursor: pointer;">
+                <label for="invertRadar" style="font-size: 14px; color: #333; cursor: pointer; margin: 0;">Inverted Radar</label>
+            </div>
+        </div>
 
-        <input type="radio" id="fillRadar" name ="radar_type" value="fill" checked>
-        <label for="fillRadar" style="font-size: 14px; color: #333; cursor: pointer; margin-right: 100px;">
-            Fill Radar
-        </label>
-
-        <input type="radio" id="EdgeRadar" name ="radar_type" value="edge">
-        <label for="EdgeRadar" style="font-size: 14px; color: #333; cursor: pointer; margin-right: 15px;">
-            Edge Radar
-        </label>
 
         <button onclick="plotRadar()" style="
             width: 100%;
@@ -92,33 +95,73 @@
                 }
             }
 
+            //To draw a perfect circular hole
+            function getCirclePoints(lat, lon, radiusMeters) {
+                var points = [];
+                var earthRadius = 6378137; // Earth's radius in meters
+                for (var i = 0; i <= 64; i++) { 
+                    var angle = (i * 360 / 64) * (Math.PI / 180);
+                    var dy = radiusMeters * Math.sin(angle);
+                    var dx = radiusMeters * Math.cos(angle);
+                    
+                    var pointLat = lat + (dy / earthRadius) * (180 / Math.PI);
+                    var pointLon = lon + (dx / earthRadius) * (180 / Math.PI) / Math.cos(lat * Math.PI / 180);
+                    points.push([pointLat, pointLon]);
+                }
+                return points;
+            }
+
             function plotRadar() {
-                var rawCoord = document.getElementById('coordsInput').value;                
-                var parts = rawCoord.split(',');
+                var rawInput = document.getElementById('coordsInput').value;
+                if (!rawInput) {
+                    alert("Please enter coordinates.");
+                    return;
+                }
                 
+                var parts = rawInput.split(',');
                 var lat = parseFloat(parts[0]);
                 var lon = parseFloat(parts[1]);
                 var size = parseFloat(document.getElementById('radarSize').value);
                 
                 var radarType = document.querySelector('input[name="radar_type"]:checked').value;
-                var fillOpac = (radarType === "fill") ? 0.2 : 0.0;
-
                 var myMap = getFoliumMap(); 
+                
                 if (!myMap) {
                     alert("System Error: Could not find the Folium Map.");
                     return;
                 }
                 
-                // THE FIX: Make sure the user typed a size as well!
                 if (lat && lon && size) {
-                    var circle = L.circle([lat, lon], {
-                        color: '#3388ff',
-                        fillColor: '#3388ff',
-                        fillOpacity: fillOpac,
-                        radius: size * 1000 // Now it knows 'size' is a real number
-                    }).addTo(myMap); 
+                    var radarLayer;
+
+                    if (radarType === "invert") {
+                        // rectangular world borer
+                        var outerBounds = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
+                        // cut-out hole within the rectangle
+                        var hole = getCirclePoints(lat, lon, size * 1000);
+                        
+                        radarLayer = L.polygon([outerBounds, hole], {
+                            color: '#3388ff',
+                            weight: '1',
+                            fillColor: '#3388ff',
+                            fillOpacity: 0.45    // 45% darkness
+                        }).addTo(myMap);
+
+                    } else {
+                        // Standard Fill Circle
+                        var fillOpac = (radarType === "fill") ? 0.2 : 0.0;
+                        radarLayer = L.circle([lat, lon], {
+                            color: '#3388ff',
+                            weight: '1',
+                            fillColor: '#3388ff',
+                            fillOpacity: 0.45,
+                            radius: size * 1000 
+                        }).addTo(myMap); 
+                    }
                     
-                    activeRadars.push(circle); 
+                    activeRadars.push(radarLayer); 
+                    myMap.setView([lat, lon], 12); // Auto-zoom to the drop point
+                    
                 } else {
                     alert("Please enter Lat, Lon, AND Size (km)!");
                 }
