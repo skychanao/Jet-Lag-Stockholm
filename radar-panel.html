@@ -16,7 +16,7 @@
 <div id="radarPanel" style="
         display: None;
         position: absolute;
-        bottom: 10px;
+        bottom: 60px;
         right: 10px;
         z-index: 9999;
         background-color: white;
@@ -90,7 +90,7 @@
                     btn.style.backgroundColor = "#ff4444";
                 } else {
                     panel.style.display = "none";
-                    btn.innerHTML = "📡 Radar Menu";
+                    btn.innerHTML = "Radar Menu";
                     btn.style.backgroundColor = "#3388ff";
                 }
             }
@@ -144,17 +144,16 @@
                             color: '#3388ff',
                             weight: '1',
                             fillColor: '#3388ff',
-                            fillOpacity: 0.45    // 45% darkness
+                            fillOpacity: 0.3
                         }).addTo(myMap);
 
                     } else {
                         // Standard Fill Circle
-                        var fillOpac = (radarType === "fill") ? 0.2 : 0.0;
                         radarLayer = L.circle([lat, lon], {
                             color: '#3388ff',
                             weight: '1',
                             fillColor: '#3388ff',
-                            fillOpacity: 0.45,
+                            fillOpacity: 0.3,
                             radius: size * 1000 
                         }).addTo(myMap); 
                     }

@@ -48,8 +48,10 @@ def main():
 
     #All Other map features
 
+    # playableArea(m)
     municipalities(m)
     districts(m)
+    train(m)
     M_lines(m)
     T_lines(m)
     stations(m)
@@ -77,7 +79,22 @@ def main():
     m.save(file_name + '.html')
 
     #Function to plop the cities
-    
+
+# def playableArea(m):
+#     range = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\45min.geojson")
+
+#     folium.GeoJson(
+#         range,
+#         name = "45min distance",
+#             style_function=lambda x: {
+#             'fillColor': 'green',
+#             'color': 'black',
+#             'weight': 3
+#         },
+#         show = True
+#     ).add_to(m)
+
+
 def municipalities(m):
     
     #read Stockholm json data
@@ -118,7 +135,8 @@ def municipalities(m):
             fields = ['name'],
             aliases=['Municipality:']
         ),
-        show = True
+        show = True,
+        control=False
     ).add_to(m)
 
 def districts(m):
@@ -130,13 +148,29 @@ def districts(m):
             style_function=lambda x: {
             'fillColor': 'transparent',
             'color': 'black',
-            'weight': 3
+            'weight': 2
         },
         tooltip=folium.GeoJsonTooltip(
             fields = ['name'],
             aliases=['Districts:'],
         ),
         show = True
+    ).add_to(m)
+
+def train(m):
+    train_lines = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\train.geojson")
+
+    #plot train lines
+    folium.GeoJson(
+        train_lines,
+        name = "Train lines",
+            style_function=lambda feature: {
+                'color':"#6E6E6E",
+                'opacity': 0.8,
+                'dashArray': '10, 10'
+        },
+        show = True,
+        control=False
     ).add_to(m)
 
 def M_lines(m):
@@ -149,9 +183,9 @@ def M_lines(m):
     folium.GeoJson(
         metro_lines,
         name = "Metro Lines",
-            style_function=lambda x: {
-            'color': 'blue',
-            'width': 1
+            style_function=lambda feature: {
+                'color': feature['properties'].get('colour', '#555555'),
+                'width': 1
         },
         tooltip=folium.GeoJsonTooltip(
             fields = ['name'],
@@ -162,7 +196,7 @@ def M_lines(m):
 
 def T_lines(m):
     raw_TLines = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\tram-lines.geojson")
-    tram_lines = raw_TLines[['name','geometry']]
+    tram_lines = raw_TLines[['name','geometry','colour']]
 
     #reduce length of tram line names 
     tram_lines['name'] = tram_lines['name'].str.split(':').str[0].str.strip()
@@ -171,9 +205,9 @@ def T_lines(m):
     folium.GeoJson(
         tram_lines,
         name = "Tram Lines",
-            style_function=lambda x: {
-            'color': 'red',
-            'width': 1,
+        style_function=lambda feature: {
+            'color': feature['properties'].get('colour', '#555555'),
+            'width': 1
         },
         tooltip=folium.GeoJsonTooltip(
             fields = ['name'],
@@ -191,15 +225,55 @@ def stations(m):
     tram_stations = raw_Tstations[['name','geometry']].drop_duplicates(subset=['name'])
     #only select stations within the game area
     tram_stations = gpd.clip(tram_stations, game_area)
+    #select starting tram stations of the game
+    start_T = tram_stations[tram_stations['name'] == "T-Centralen"][['name','geometry']]
+    #remove starting tram stations from other tram stations
+    tram_stations = tram_stations[~tram_stations['name'].isin(start_T['name'])]
 
-    #extract name and geometry of metro stations 
-    metro_stations = raw_Mstations[['name','geometry']]
+    #extract name and geometry of unique metro stations 
+    metro_stations = raw_Mstations[['name','geometry']].drop_duplicates(subset=['name'])
     #only select stations within the game area
     metro_stations = gpd.clip(metro_stations, game_area)
-    #hubs_M = metro_stations[metro_stations['name'].isin(tram_stations['name'])]
-    #tram_stations = tram_stations[~tram_stations['name'].isin(metro_stations['name'])]
-    #metro_stations = metro_stations[~metro_stations['name'].isin(tram_stations['name'])]
-    #hubs = folium.FeatureGroup(name="Metro Stations")
+    #select starting metro stations of the game
+    start_M = metro_stations[metro_stations['name'] == "T-Centralen"][['name','geometry']]
+    #remove starting tram stations from other tram stations
+    metro_stations = metro_stations[~metro_stations['name'].isin(start_M['name'])]
+
+    #plot starting points
+    start = pd.concat([start_M,start_T])
+    folium.GeoJson(
+        start,
+        name = "Starting Point",
+        marker=folium.Marker(
+            icon=folium.Icon(
+                color ='black',
+                icon='flag-checkered', 
+                prefix='fa')
+        ),
+        tooltip=folium.GeoJsonTooltip(
+            fields = ['name'],
+            labels=False
+        ),
+        show = True
+    ).add_to(m)
+
+    
+    #plot stations with metro
+    folium.GeoJson(
+        metro_stations,
+        name = "Metro Stations",
+        marker=folium.Marker(
+            icon=folium.Icon(
+                color ='darkblue',
+                icon='train-subway', 
+                prefix='fa')
+        ),
+        tooltip=folium.GeoJsonTooltip(
+            fields = ['name'],
+            labels=False
+        ),
+        show = False
+    ).add_to(m)
 
     #plot stations with tram
     folium.GeoJson(
@@ -217,26 +291,9 @@ def stations(m):
         ),
         show = False
     ).add_to(m)
-
-    #plot stations with metro
-    folium.GeoJson(
-        metro_stations,
-        name = "Metro Stations",
-        marker=folium.Marker(
-            icon=folium.Icon(
-                color ='darkblue',
-                icon='train-subway', 
-                prefix='fa')
-        ),
-        tooltip=folium.GeoJsonTooltip(
-            fields = ['name'],
-            labels=False
-        ),
-        show = False
-    ).add_to(m)
     
     # plop hiding zones
-    all_station = pd.concat([metro_stations,tram_stations])
+    all_station = pd.concat([metro_stations,tram_stations,start])
     hiding_zone = folium.FeatureGroup(name="Hiding Zone", show=False)
 
     for idx, row in all_station.iterrows():
@@ -264,7 +321,7 @@ def radar(m):
         metric=True,
     ).add_to(m)
 
-    with open(r"Jet-Lag-Stockholm\radar-panel.html", "r", encoding="utf-8") as f:
+    with open(r"E:\TUE\Projects\Jet-Lag-Stockholm\radar-panel.html", "r", encoding="utf-8") as f:
         radar_panel_html = f.read()
         
     m.get_root().html.add_child(folium.Element(radar_panel_html))

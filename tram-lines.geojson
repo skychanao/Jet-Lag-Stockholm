@@ -8,7 +8,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/241405",
-        "colour": "#A05EA6",
+        "colour": "#a05da6",
         "comment": "Dense traffic only between Stockholm Östra and Ormsta.",
         "from": "Stockholms östra",
         "interval": "15",
@@ -4439,7 +4439,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/241406",
-        "colour": "#A05EA6",
+        "colour": "#a05da6",
         "from": "Stockholms östra",
         "interval": "15",
         "interval:evening": "30",
@@ -8651,7 +8651,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/241407",
-        "colour": "#A05EA6",
+        "colour": "#a05da6",
         "from": "Stockholms östra",
         "interval": "30",
         "interval:peak": "20",
@@ -10931,7 +10931,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/251504",
-        "colour": "#B56631",
+        "colour": "#b66732",
         "from": "Ropsten",
         "interval": "20",
         "interval:peak": "10",
@@ -12381,7 +12381,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/2860815",
-        "colour": "#878A83",
+        "colour": "#80857e",
         "from": "T-Centralen",
         "interval": "7",
         "interval:evening": "15",
@@ -14133,7 +14133,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/3174524",
-        "colour": "#648FA8",
+        "colour": "#738ba4",
         "from": "Alvik",
         "interval": "10",
         "interval:evening": "20",
@@ -16103,7 +16103,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/5989911",
-        "colour": "#D77D00",
+        "colour": "#DE8221",
         "from": "Sickla",
         "interval": "7",
         "interval:evening": "10",
@@ -25177,7 +25177,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/11151436",
-        "colour": "#A05EA6",
+        "colour": "#a05da6",
         "from": "Kårsta",
         "name": "Lokalbana 27: Kårsta - Stockholms östra",
         "network": "SL",
@@ -29598,7 +29598,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/11151438",
-        "colour": "#A05EA6",
+        "colour": "#a05da6",
         "from": "Österskär",
         "name": "Lokalbana 28: Österskär - Stockholms östra",
         "network": "SL",
@@ -33805,7 +33805,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/11151440",
-        "colour": "#A05EA6",
+        "colour": "#a05da6",
         "from": "Näsbypark",
         "name": "Lokalbana 29: Näsbypark - Stockholms östra",
         "network": "SL",
@@ -38822,7 +38822,7 @@
             "role": "stop",
             "rel": 5989912,
             "reltags": {
-              "colour": "#D77D00",
+              "colour": "#DE8221",
               "from": "Solna station",
               "interval": "7",
               "interval:evening": "10",

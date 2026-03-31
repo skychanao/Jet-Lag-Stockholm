@@ -8,7 +8,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286469",
-        "colour": "blue",
+        "colour": "#0091d2",
         "from": "Hjulsta",
         "interval": "10",
         "interval:evening": "15",
@@ -915,7 +915,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286470",
-        "colour": "blue",
+        "colour": "#0091d2",
         "from": "Kungsträdgården",
         "interval": "10",
         "interval:evening": "15",
@@ -1766,7 +1766,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286471",
-        "colour": "blue",
+        "colour": "#0091d2",
         "from": "Akalla",
         "interval": "10",
         "interval:evening": "15",
@@ -3093,7 +3093,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286472",
-        "colour": "blue",
+        "colour": "#0091d2",
         "from": "Kungsträdgården",
         "interval": "10",
         "interval:evening": "15",
@@ -4436,7 +4436,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286473",
-        "colour": "red",
+        "colour": "#e31f26",
         "from": "Norsborg",
         "interval": "10",
         "interval:evening": "15",
@@ -7128,7 +7128,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286474",
-        "colour": "red",
+        "colour": "#e31f26",
         "from": "Ropsten",
         "interval": "10",
         "interval:evening": "15",
@@ -9695,7 +9695,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286475",
-        "colour": "red",
+        "colour": "#e31f26",
         "from": "Fruängen",
         "interval": "10",
         "interval:evening": "15",
@@ -11731,7 +11731,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286476",
-        "colour": "red",
+        "colour": "#e31f26",
         "from": "Mörby centrum",
         "interval": "10",
         "interval:evening": "15",
@@ -13668,7 +13668,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286477",
-        "colour": "green",
+        "colour": "##00b259",
         "from": "Skarpnäck",
         "interval": "10",
         "interval:evening": "15",
@@ -17168,7 +17168,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286478",
-        "colour": "green",
+        "colour": "#00b259",
         "from": "Hässelby strand",
         "interval": "10",
         "interval:evening": "15",
@@ -20303,7 +20303,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286479",
-        "colour": "green",
+        "colour": "#00b259",
         "from": "Hässelby strand",
         "interval": "10",
         "interval:evening": "15",
@@ -23802,7 +23802,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286480",
-        "colour": "green",
+        "colour": "#00b259",
         "from": "Farsta strand",
         "interval": "10",
         "interval:evening": "15",
@@ -27629,7 +27629,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286481",
-        "colour": "green",
+        "colour": "#00b259",
         "from": "Hagsätra",
         "interval": "10",
         "interval:evening": "15",
@@ -31486,7 +31486,7 @@
       "type": "Feature",
       "properties": {
         "@id": "relation/6286482",
-        "colour": "green",
+        "colour": "#00b259",
         "from": "Hässelby strand",
         "interval": "10",
         "interval:evening": "15",
