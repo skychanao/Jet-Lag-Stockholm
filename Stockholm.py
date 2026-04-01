@@ -55,7 +55,12 @@ def main():
     M_lines(m)
     T_lines(m)
     stations(m)
+
+    amusementParks(m)
+
+
     radar(m)
+    
     
 
     #Add location request
@@ -158,7 +163,11 @@ def districts(m):
     ).add_to(m)
 
 def train(m):
+
     train_lines = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\train.geojson")
+
+    #reduce length of tram line names 
+    train_lines['name'] = train_lines['name'].str.split(':').str[0].str.strip()
 
     #plot train lines
     folium.GeoJson(
@@ -169,6 +178,10 @@ def train(m):
                 'opacity': 0.8,
                 'dashArray': '10, 10'
         },
+        tooltip=folium.GeoJsonTooltip(
+            fields = ['name'],
+            labels = False
+        ),
         show = True,
         control=False
     ).add_to(m)
@@ -312,6 +325,27 @@ def hidingZones(group,radius,lat,long):
         show=False,
     ).add_to(group)
 
+def amusementParks(m):
+    amusementParks = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\Amusement-Park.geojson")
+    amusementParks['label'] = amusementParks['label'].str.split('-').str[0].str.strip()
+
+    folium.GeoJson(
+        amusementParks,
+        name = "Amusement Parks",
+        marker=folium.Marker(
+            icon=folium.Icon(
+                color ='pink',
+                icon='ticket', 
+                prefix='fa')
+        ),
+        popup=folium.GeoJsonPopup(
+            fields = ['label'],
+            labels=False
+        ),
+        show = False
+    ).add_to(m)
+
+# Tools
 def radar(m):
     #GPS function for radars
     folium.plugins.LocateControl(
