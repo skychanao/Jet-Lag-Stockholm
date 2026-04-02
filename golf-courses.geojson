@@ -156,6 +156,19 @@
       "properties": {
         "label": "Danderyd Golf Club - Edsbergsvägen 2, 182 37 Danderyd Municipality, Sweden"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.08274564,
+          59.22449564
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Ågesta Golfklubb - Vidjavägen 3, 123 52 Farsta, Sweden"
+      }
     }
   ]
 }
