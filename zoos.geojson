@@ -5,52 +5,52 @@
       "type": "Feature",
       "geometry": {
         "coordinates": [
-          18.0970941,
-          59.32453258
+          18.1058559,
+          59.3263233
         ],
         "type": "Point"
       },
       "properties": {
-        "label": "Gröna Lund - Halima, 115 21 Stockholm, Sweden"
+        "label": "Skansen - Djurgårdsslätten 49-51, 115 21 Stockholm, Sweden"
       }
     },
     {
       "type": "Feature",
       "geometry": {
         "coordinates": [
-          17.96672247,
-          59.35202876
+          17.96937914,
+          59.30797899
         ],
         "type": "Point"
       },
       "properties": {
-        "label": "Bodyflight Stockholm - Bryggerivägen 16, 168 67 Bromma city district, Sweden"
+        "label": "Eolshälls 4H - Eolshällsvägen 10, 129 37 Hägersten, Sweden"
       }
     },
     {
       "type": "Feature",
       "geometry": {
         "coordinates": [
-          17.90936648,
-          59.26558311
+          17.911113,
+          59.412361
         ],
         "type": "Point"
       },
       "properties": {
-        "label": "Yoump - Månskärsvägen 1, 141 75 Kungens Kurva, Sweden"
+        "label": "Akalla 4H farm - Akalla By 4, 164 78 Kista, Sweden"
       }
     },
     {
       "type": "Feature",
       "geometry": {
         "coordinates": [
-          17.95121744,
-          59.42816885
+          17.99694652,
+          59.34504443
         ],
         "type": "Point"
       },
       "properties": {
-        "label": "Funland - Sollentunavägen 163C, 191 47 Sollentuna, Sweden"
+        "label": "Augustendals 4H-Klubb - Huvudstagatan 21, 171 73 Solna Municipality, Sweden"
       }
     }
   ]

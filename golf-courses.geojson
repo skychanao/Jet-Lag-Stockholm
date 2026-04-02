@@ -1,0 +1,161 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.188045,
+          59.361408
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Ekholmsnäs Golf Lidingö AB - Ekholmsnäsvägen 87, 181 41 Lidingö, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.04169838,
+          59.2881081
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Årsta Golf - Östbergavägen 10, 125 74 Älvsjö, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.14397091,
+          59.28524896
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Björkhagens Golfklubb - Ljusnevägen, 131 33 Nacka, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.08059677,
+          59.3461225
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Idrottshogskolans Golfklubb - Lidingövägen 1, 114 33 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          17.993944,
+          59.387912
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Ulriksdals GK - Överjärva Gårdsväg 11a, 170 67 Solna Municipality, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          17.899145,
+          59.402621
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Järva Disc Golf Park - Akallalänken 10, 164 74 Kista, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          17.791756,
+          59.390627
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Golfstar Hässelby - Lövsta Koloniväg 3, 165 72 Hässelby, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          17.816945,
+          59.40159117
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Viksjö Golfklubb - Fjällens Gård, 175 45 Järfälla Municipality, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.12711646,
+          59.37927019
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Lidingö Golfklubb - Trolldalsvägen 2, 181 29 Lidingö, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.030101,
+          59.394226
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Stockholm Golfclub - Kevinge Strand 22, 182 57 Danderyd Municipality, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.08043467,
+          59.41432965
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Djursholms Golf Club - Hagbardsvägen 1, 182 63 Djursholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.01955296,
+          59.41507597
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Danderyd Golf Club - Edsbergsvägen 2, 182 37 Danderyd Municipality, Sweden"
+      }
+    }
+  ]
+}

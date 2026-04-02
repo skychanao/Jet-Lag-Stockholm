@@ -1,0 +1,44 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.1036728,
+          59.3245393
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Skansen Aquarium - Djurgårdsslätten 49-51, 115 21 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0313565,
+          59.36606211
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Haga Ocean - Hagalund, 169 70 Solna Municipality, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          17.87595081,
+          59.39285322
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Akvarieleasing - Domnarvsgatan 10, 163 53 Spånga, Sweden"
+      }
+    }
+  ]
+}

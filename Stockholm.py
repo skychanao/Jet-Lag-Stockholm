@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Polygon, shape
@@ -12,6 +14,10 @@ import json
 
 
 def main():
+
+    #read local file path
+    global script_folder
+    script_folder = Path(__file__).parent
 
     #initalize map titles
     min_lon, max_lon = 17.70891393315022, 18.536390448353895 #gotta increase these 
@@ -48,6 +54,7 @@ def main():
 
     #All Other map features
 
+    #Base Map features
     # playableArea(m)
     municipalities(m)
     districts(m)
@@ -56,9 +63,13 @@ def main():
     T_lines(m)
     stations(m)
 
+    #Point of Interest for Seeking
     amusementParks(m)
+    zoo(m)
+    aquarium(m)
+    golf(m)
 
-
+    #Seeking Tooks
     radar(m)
     
     
@@ -80,8 +91,8 @@ def main():
 
     #map generation
     print("sucessfully generated map.")
-    file_name = r'E:\TUE\Projects\Jet-Lag-Stockholm\Stockholm'
-    m.save(file_name + '.html')
+    file_name = script_folder / "Stockholm.html"
+    m.save(file_name)
 
     #Function to plop the cities
 
@@ -103,7 +114,7 @@ def main():
 def municipalities(m):
     
     #read Stockholm json data
-    raw_municialities = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\sweden-municipalities2.geojson")
+    raw_municialities = gpd.read_file(script_folder / "sweden-municipalities2.geojson")
 
     #clean up data
     cleaned_data = []
@@ -145,7 +156,7 @@ def municipalities(m):
     ).add_to(m)
 
 def districts(m):
-    districts = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\stockholm-districts.geojson")
+    districts = gpd.read_file(script_folder / "stockholm-districts.geojson")
 
     folium.GeoJson(
         districts,
@@ -164,7 +175,7 @@ def districts(m):
 
 def train(m):
 
-    train_lines = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\train.geojson")
+    train_lines = gpd.read_file(script_folder / "train.geojson")
 
     #reduce length of tram line names 
     train_lines['name'] = train_lines['name'].str.split(':').str[0].str.strip()
@@ -187,7 +198,7 @@ def train(m):
     ).add_to(m)
 
 def M_lines(m):
-    metro_lines = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\metro-lines.geojson")
+    metro_lines = gpd.read_file(script_folder / "metro-lines.geojson")
 
     #reduce length of metro line names
     metro_lines['name'] = metro_lines['name'].str[:13]
@@ -208,7 +219,7 @@ def M_lines(m):
     ).add_to(m)
 
 def T_lines(m):
-    raw_TLines = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\tram-lines.geojson")
+    raw_TLines = gpd.read_file(script_folder / "tram-lines.geojson")
     tram_lines = raw_TLines[['name','geometry','colour']]
 
     #reduce length of tram line names 
@@ -231,8 +242,8 @@ def T_lines(m):
 
 def stations(m):
     #read data from GeoJson
-    raw_Tstations = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\tram-stations.geojson")
-    raw_Mstations = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\metro-stations.geojson")
+    raw_Tstations = gpd.read_file(script_folder / "tram-stations.geojson")
+    raw_Mstations = gpd.read_file(script_folder / "metro-stations.geojson")
 
     #extract name and geometry of unique tram stations 
     tram_stations = raw_Tstations[['name','geometry']].drop_duplicates(subset=['name'])
@@ -326,7 +337,7 @@ def hidingZones(group,radius,lat,long):
     ).add_to(group)
 
 def amusementParks(m):
-    amusementParks = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\Amusement-Park.geojson")
+    amusementParks = gpd.read_file(script_folder / "Amusement-Park.geojson")
     amusementParks['label'] = amusementParks['label'].str.split('-').str[0].str.strip()
 
     folium.GeoJson(
@@ -345,6 +356,67 @@ def amusementParks(m):
         show = False
     ).add_to(m)
 
+def zoo(m):
+    zoos = gpd.read_file(script_folder / "zoos.geojson")
+    zoos['label'] = zoos['label'].str.split(' - ').str[0].str.strip()
+
+    folium.GeoJson(
+        zoos,
+        name = "Zoos",
+        marker=folium.Marker(
+            icon=folium.Icon(
+                color ='darkred',
+                icon='paw', 
+                prefix='fa')
+        ),
+        popup=folium.GeoJsonPopup(
+            fields = ['label'],
+            labels=False
+        ),
+        show = False
+    ).add_to(m)
+
+def aquarium(m):
+    aquariums = gpd.read_file(script_folder / "aquariums.geojson")
+    aquariums['label'] = aquariums['label'].str.split(' - ').str[0].str.strip()
+
+    folium.GeoJson(
+        aquariums,
+        name = "Aquariums",
+        marker=folium.Marker(
+            icon=folium.Icon(
+                color ='lightblue',
+                icon='fish', 
+                prefix='fa')
+        ),
+        popup=folium.GeoJsonPopup(
+            fields = ['label'],
+            labels=False
+        ),
+        show = False
+    ).add_to(m)
+
+def golf(m):
+    golf_courses = gpd.read_file(script_folder / "golf-courses.geojson")
+    golf_courses['label'] = golf_courses['label'].str.split(' - ').str[0].str.strip()
+
+    folium.GeoJson(
+        golf_courses,
+        name = "Golf Courses",
+        marker=folium.Marker(
+            icon=folium.Icon(
+                color ='darkgreen',
+                icon='golf-ball', 
+                prefix='fa')
+        ),
+        popup=folium.GeoJsonPopup(
+            fields = ['label'],
+            labels=False
+        ),
+        show = False
+    ).add_to(m)
+
+
 # Tools
 def radar(m):
     #GPS function for radars
@@ -355,7 +427,7 @@ def radar(m):
         metric=True,
     ).add_to(m)
 
-    with open(r"E:\TUE\Projects\Jet-Lag-Stockholm\radar-panel.html", "r", encoding="utf-8") as f:
+    with open(script_folder / "radar-panel.html", "r", encoding="utf-8") as f:
         radar_panel_html = f.read()
         
     m.get_root().html.add_child(folium.Element(radar_panel_html))
