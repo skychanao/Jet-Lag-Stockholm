@@ -1,3 +1,6 @@
+import streamlit as st
+from streamlit_folium import st_folium
+
 from pathlib import Path
 
 import geopandas as gpd
@@ -18,6 +21,9 @@ def main():
     #read local file path
     global script_folder
     script_folder = Path(__file__).parent
+
+    #Setup Streamlit
+    st.set_page_config(page_title="Stockholm Map", layout="wide")
 
     #initalize map titles
     min_lon, max_lon = 17.70891393315022, 18.536390448353895 #gotta increase these 
@@ -70,7 +76,7 @@ def main():
     golf(m)
 
     #Seeking Tooks
-    radar(m)
+    #radar(m)
     
     
 
@@ -84,17 +90,20 @@ def main():
     Draw(export=False).add_to(m)
 
     #Add lat, lon popup
-    m.add_child(
-        folium.ClickForLatLng(format_str='lat + "," + lng ', alert=True)
-    )
+    # m.add_child(
+    #     folium.ClickForLatLng(format_str='lat + "," + lng ', alert=True)
+    # )
 
 
     #map generation
-    print("sucessfully generated map.")
-    file_name = script_folder / "Stockholm.html"
-    m.save(file_name)
+    # print("sucessfully generated map.")
+    # file_name = script_folder / "Stockholm.html"
+    # m.save(file_name)
 
-    #Function to plop the cities
+    st_folium(m, width=2000, height=1000)
+
+
+    #Functions to plop the cities features
 
 # def playableArea(m):
 #     range = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\45min.geojson")
