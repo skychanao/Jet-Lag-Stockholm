@@ -5,7 +5,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
-from shapely.geometry import Polygon, shape
+from shapely.geometry import Polygon, shape, Point
 
 
 import folium
@@ -24,13 +24,28 @@ def main():
 
     #Setup Streamlit
     st.set_page_config(page_title="Stockholm Map", layout="wide")
+    st.markdown(
+        """
+        <style>
+        /* Prevent Streamlit from making elements stale/gray during reruns */
+        div[data-testid="stElementContainer"], iframe {
+            opacity: 1 !important;
+            transition: none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    #Streamlit Features
+    streamlit_features()
 
     #initalize map titles
     min_lon, max_lon = 17.70891393315022, 18.536390448353895 #gotta increase these 
     min_lat, max_lat = 59.216339768502074, 59.4527626869623
 
     m = folium.Map(location=(59.330179255373515, 18.057957648090127),
-        tiles="cartodb positron",
+        tiles="OpenStreetMap",
         max_bounds=True,
         zoom_start = 11,
         min_zoom=10,
@@ -41,6 +56,7 @@ def main():
         # min_lon=min_lon,
         # max_lon=max_lon,
     )
+
     cartonDB = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
     folium.TileLayer(
         max_bounds=True,
@@ -76,7 +92,7 @@ def main():
     golf(m)
 
     #Seeking Tooks
-    #radar(m)
+    draw_radar(m)
     
     
 
@@ -100,7 +116,10 @@ def main():
     # file_name = script_folder / "Stockholm.html"
     # m.save(file_name)
 
-    st_folium(m, width=2000, height=1000)
+    st_folium(m,
+        use_container_width=True,
+        height=900
+    )
 
 
     #Functions to plop the cities features
@@ -119,6 +138,39 @@ def main():
 #         show = True
 #     ).add_to(m)
 
+def streamlit_features():
+
+    if "radars" not in st.session_state:
+        st.session_state.radars = []
+
+    # read user input
+    st.sidebar.header("Radar")
+    coordinate = st.sidebar.text_input(label = "Coordinate", placeholder = "lat, lon")
+    radius = st.sidebar.number_input(label = "Radius", placeholder = "x (km)", step=0.5, min_value=0.0)
+    radar_type = st.sidebar.radio("Radar Type", ["Hit", "Miss"])
+
+    #read coordinate
+    if "," in coordinate:
+        parts = coordinate.split(',')
+        
+        try:
+            latitude = float(parts[0].strip())
+            longitude = float(parts[1].strip())
+            
+        except ValueError:
+            st.sidebar.error("Error: Please only type numbers.")
+    
+    if st.sidebar.button("Plot Radar", use_container_width=True):
+        st.session_state.radars.append({
+                "lat": latitude,
+                "lon": longitude,
+                "size": radius,
+                "type": radar_type
+            })
+
+    if st.sidebar.button("Undo Radar", use_container_width=True):
+        if st.session_state.radars:
+            st.session_state.radars.pop() # Removes the last drawn radar   
 
 def municipalities(m):
     
@@ -126,8 +178,7 @@ def municipalities(m):
     raw_municialities = gpd.read_file(script_folder / "sweden-municipalities2.geojson")
 
     #clean up data
-    cleaned_data = []
-    cleaned_data = raw_municialities[['name', 'geometry']]
+    cleaned_data = clean_geometry(raw_municialities[['name', 'geometry']])
 
     #build a GeoDataFrame with the cleaned data
     global game_area
@@ -143,6 +194,12 @@ def municipalities(m):
     folium.GeoJson(
         mask_gdf,
         name="Out of Bounds",
+        style_function=lambda x: {
+            'fillColor': '#3388ff',
+            'color': '#3388ff',       
+            'weight': 3,
+            'fillOpacity': 0.4
+        },
         control=False
     ).add_to(m)
     
@@ -165,7 +222,8 @@ def municipalities(m):
     ).add_to(m)
 
 def districts(m):
-    districts = gpd.read_file(script_folder / "stockholm-districts.geojson")
+    raw_districts = gpd.read_file(script_folder / "stockholm-districts.geojson")
+    districts = clean_geometry(raw_districts)
 
     folium.GeoJson(
         districts,
@@ -183,8 +241,8 @@ def districts(m):
     ).add_to(m)
 
 def train(m):
-
-    train_lines = gpd.read_file(script_folder / "train.geojson")
+    raw_train_lines = gpd.read_file(script_folder / "train.geojson")
+    train_lines = clean_geometry(raw_train_lines)
 
     #reduce length of tram line names 
     train_lines['name'] = train_lines['name'].str.split(':').str[0].str.strip()
@@ -207,7 +265,8 @@ def train(m):
     ).add_to(m)
 
 def M_lines(m):
-    metro_lines = gpd.read_file(script_folder / "metro-lines.geojson")
+    raw_metro_lines = gpd.read_file(script_folder / "metro-lines.geojson")
+    metro_lines = clean_geometry(raw_metro_lines)
 
     #reduce length of metro line names
     metro_lines['name'] = metro_lines['name'].str[:13]
@@ -229,7 +288,7 @@ def M_lines(m):
 
 def T_lines(m):
     raw_TLines = gpd.read_file(script_folder / "tram-lines.geojson")
-    tram_lines = raw_TLines[['name','geometry','colour']]
+    tram_lines = clean_geometry(raw_TLines[['name','geometry','colour']])
 
     #reduce length of tram line names 
     tram_lines['name'] = tram_lines['name'].str.split(':').str[0].str.strip()
@@ -254,8 +313,9 @@ def stations(m):
     raw_Tstations = gpd.read_file(script_folder / "tram-stations.geojson")
     raw_Mstations = gpd.read_file(script_folder / "metro-stations.geojson")
 
+
     #extract name and geometry of unique tram stations 
-    tram_stations = raw_Tstations[['name','geometry']].drop_duplicates(subset=['name'])
+    tram_stations = clean_geometry(raw_Tstations[['name','geometry']].drop_duplicates(subset=['name']))
     #only select stations within the game area
     tram_stations = gpd.clip(tram_stations, game_area)
     #select starting tram stations of the game
@@ -264,7 +324,7 @@ def stations(m):
     tram_stations = tram_stations[~tram_stations['name'].isin(start_T['name'])]
 
     #extract name and geometry of unique metro stations 
-    metro_stations = raw_Mstations[['name','geometry']].drop_duplicates(subset=['name'])
+    metro_stations = clean_geometry(raw_Mstations[['name','geometry']].drop_duplicates(subset=['name']))
     #only select stations within the game area
     metro_stations = gpd.clip(metro_stations, game_area)
     #select starting metro stations of the game
@@ -274,6 +334,7 @@ def stations(m):
 
     #plot starting points
     start = pd.concat([start_M,start_T])
+
     folium.GeoJson(
         start,
         name = "Starting Point",
@@ -346,7 +407,8 @@ def hidingZones(group,radius,lat,long):
     ).add_to(group)
 
 def amusementParks(m):
-    amusementParks = gpd.read_file(script_folder / "Amusement-Park.geojson")
+    raw_amusementParks = gpd.read_file(script_folder / "Amusement-Park.geojson")
+    amusementParks = clean_geometry(raw_amusementParks)
     amusementParks['label'] = amusementParks['label'].str.split('-').str[0].str.strip()
 
     folium.GeoJson(
@@ -366,7 +428,8 @@ def amusementParks(m):
     ).add_to(m)
 
 def zoo(m):
-    zoos = gpd.read_file(script_folder / "zoos.geojson")
+    raw_zoos = gpd.read_file(script_folder / "zoos.geojson")
+    zoos = clean_geometry(raw_zoos)
     zoos['label'] = zoos['label'].str.split(' - ').str[0].str.strip()
 
     folium.GeoJson(
@@ -386,7 +449,8 @@ def zoo(m):
     ).add_to(m)
 
 def aquarium(m):
-    aquariums = gpd.read_file(script_folder / "aquariums.geojson")
+    raw_aquariums = gpd.read_file(script_folder / "aquariums.geojson")
+    aquariums = clean_geometry(raw_aquariums)
     aquariums['label'] = aquariums['label'].str.split(' - ').str[0].str.strip()
 
     folium.GeoJson(
@@ -406,7 +470,8 @@ def aquarium(m):
     ).add_to(m)
 
 def golf(m):
-    golf_courses = gpd.read_file(script_folder / "golf-courses.geojson")
+    raw_golfcourses = gpd.read_file(script_folder / "golf-courses.geojson")
+    golf_courses = clean_geometry(raw_golfcourses)
     golf_courses['label'] = golf_courses['label'].str.split(' - ').str[0].str.strip()
 
     folium.GeoJson(
@@ -425,22 +490,64 @@ def golf(m):
         show = False
     ).add_to(m)
 
+#function to drop NULL values
+def clean_geometry(gdf):
+    #Drop data with no shape data
+    gdf = gdf.dropna(subset=['geometry'])
+    
+    #Keep only the standard shapes that Folium knows how to draw
+    supported_shapes = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon']
+    gdf = gdf[gdf.geometry.type.isin(supported_shapes)]
+    return gdf
+
 
 # Tools
-def radar(m):
-    #GPS function for radars
-    folium.plugins.LocateControl(
-        position="topleft",
-        drawCircle=True,
-        flyTo=True,
-        metric=True,
-    ).add_to(m)
+def draw_radar(m):
 
-    with open(script_folder / "radar-panel.html", "r", encoding="utf-8") as f:
-        radar_panel_html = f.read()
-        
-    m.get_root().html.add_child(folium.Element(radar_panel_html))
+    for r in st.session_state.radars:
+    
+        #Read Circle data
+        center = Point(r["lon"], r["lat"])  
+        circle_gdf = gpd.GeoDataFrame(geometry=[center], crs="EPSG:4326")
+        circle_meters = circle_gdf.to_crs(epsg=3006) 
+        circle_shape = circle_meters.buffer(r["size"] * 1000).to_crs(epsg=4326).geometry.iloc[0]
+        inverted_mask = game_area.difference(circle_shape)
+        #If radar is hit, keep only radar circle unfilled
+        if r["type"] == "Hit":
+            #keep only radar area unfilled
+            folium.GeoJson(
+                inverted_mask,
+                style_function=lambda x: {
+                    'fillColor': '#3388ff',
+                    'color': '#3388ff',       
+                    'weight': 3,
+                    'fillOpacity': 0.4
+                },
+                control=False
+            ).add_to(m)
 
+        #If radar is a miss, fill the circle
+
+        elif r["type"] == "Miss":
+            #plot a filled cicle
+            folium.GeoJson(
+                circle_shape,
+                name="Miss Mask",
+                style_function=lambda x: {
+                    'fillColor': '#3388ff',
+                    'color': '#3388ff',       
+                    'weight': 3,
+                    'fillOpacity': 0.4
+                },
+                control=False
+            ).add_to(m)
+
+def clip_tool(feature, mask_area):
+    if feature.empty or mask_area.geometry.iloc[0].is_empty:
+        return mask_area.iloc[0:0]  
+    clipped_data = gpd.clip(feature, game_area)
+    print("Clipped")
+    return clipped_data
 
 
 if __name__ == "__main__":
