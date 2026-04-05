@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_folium import st_folium
+from streamlit_geolocation import streamlit_geolocation 
 
 from pathlib import Path
 
@@ -97,7 +98,7 @@ def main():
     
 
     #Add location request
-    #folium.plugins.LocateControl(auto_start=False).add_to(m)
+    folium.plugins.LocateControl(auto_start=False).add_to(m)
 
     #Add layer control
     folium.LayerControl().add_to(m)
@@ -144,10 +145,26 @@ def streamlit_features():
         st.session_state.radars = []
 
     # read user input
-    st.sidebar.header("Radar")
-    coordinate = st.sidebar.text_input(label = "Coordinate", placeholder = "lat, lon")
-    radius = st.sidebar.number_input(label = "Radius", placeholder = "x (km)", step=0.5, min_value=0.0)
-    radar_type = st.sidebar.radio("Radar Type", ["Hit", "Miss"])
+    with st.sidebar:
+        st.header("Radar")
+        
+        location = streamlit_geolocation()
+
+        def copy_to_text_box():
+            if location['latitude'] is not None and location['longitude'] is not None:
+                #Format Number
+                st.session_state.coord_input = f"{location['latitude']}, {location['longitude']}"
+            else:
+                st.warning("Still searching for GPS...")
+        
+        st.button("Autofill Coordinates", on_click=copy_to_text_box, use_container_width=True)
+
+        coordinate = st.text_input(label = "Coordinate", placeholder = "lat, lon",key="coord_input")
+
+        radius = st.number_input(label = "Radius", placeholder = "x (km)", step=0.5, min_value=0.0)
+        radar_type = st.radio("Radar Type", ["Hit", "Miss"])
+
+
 
     #read coordinate
     if "," in coordinate:
@@ -159,7 +176,7 @@ def streamlit_features():
             
         except ValueError:
             st.sidebar.error("Error: Please only type numbers.")
-    
+
     if st.sidebar.button("Plot Radar", use_container_width=True):
         st.session_state.radars.append({
                 "lat": latitude,
@@ -500,7 +517,6 @@ def clean_geometry(gdf):
     gdf = gdf[gdf.geometry.type.isin(supported_shapes)]
     return gdf
 
-
 # Tools
 def draw_radar(m):
 
@@ -546,7 +562,6 @@ def clip_tool(feature, mask_area):
     if feature.empty or mask_area.geometry.iloc[0].is_empty:
         return mask_area.iloc[0:0]  
     clipped_data = gpd.clip(feature, game_area)
-    print("Clipped")
     return clipped_data
 
 
