@@ -543,7 +543,7 @@ def draw_radar(m):
         circle_gdf = gpd.GeoDataFrame(geometry=[center], crs="EPSG:4326")
         circle_meters = circle_gdf.to_crs(epsg=3006) 
         circle_shape = circle_meters.buffer(r["size"] * 1000).to_crs(epsg=4326).geometry.iloc[0]
-        inverted_mask = game_area.geometry.unary_all.difference(circle_shape)        
+        inverted_mask = game_area.difference(circle_shape)        
         #If radar is hit, keep only radar circle unfilled
         if r["type"] == "Hit":
             #keep only radar area unfilled
