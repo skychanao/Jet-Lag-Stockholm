@@ -2,6 +2,8 @@ import streamlit as st
 from streamlit_folium import st_folium
 from streamlit_geolocation import streamlit_geolocation 
 
+import warnings
+import os
 from pathlib import Path
 
 import geopandas as gpd
@@ -19,10 +21,17 @@ import json
 
 def main():
 
+    #ignore warnings
+    warnings.filterwarnings("ignore")
+
+    #OS stuff
+    os.environ['CPL_LOG'] = 'NUL'
+    os.environ['CPL_LOG_ERRORS'] = 'OFF'    
+
     #read local file path
     global script_folder
     script_folder = Path(__file__).parent
-
+    
     #Setup Streamlit
     st.set_page_config(page_title="Stockholm Map", layout="wide")
     st.markdown(
@@ -527,7 +536,7 @@ def draw_radar(m):
         circle_gdf = gpd.GeoDataFrame(geometry=[center], crs="EPSG:4326")
         circle_meters = circle_gdf.to_crs(epsg=3006) 
         circle_shape = circle_meters.buffer(r["size"] * 1000).to_crs(epsg=4326).geometry.iloc[0]
-        inverted_mask = game_area.difference(circle_shape)
+        inverted_mask = game_area.geometry.unary_all.difference(circle_shape)        
         #If radar is hit, keep only radar circle unfilled
         if r["type"] == "Hit":
             #keep only radar area unfilled
@@ -561,7 +570,7 @@ def draw_radar(m):
 def clip_tool(feature, mask_area):
     if feature.empty or mask_area.geometry.iloc[0].is_empty:
         return mask_area.iloc[0:0]  
-    clipped_data = gpd.clip(feature, game_area)
+    clipped_data = gpd.clip(feature, mask_area)
     return clipped_data
 
 
