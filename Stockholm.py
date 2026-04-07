@@ -4,6 +4,7 @@ from streamlit_geolocation import streamlit_geolocation
 
 import warnings
 import os
+import logging
 from pathlib import Path
 
 import geopandas as gpd
@@ -28,10 +29,16 @@ def main():
     os.environ['CPL_LOG'] = 'NUL'
     os.environ['CPL_LOG_ERRORS'] = 'OFF'    
 
+    #Streamlit Remove warning
+    logging.getLogger('fiona').setLevel(logging.ERROR)
+    logging.getLogger('fiona.ogrext').setLevel(logging.ERROR)
+    logging.getLogger('GDAL').setLevel(logging.ERROR)
+    logging.getLogger('rasterio').setLevel(logging.ERROR)
+
     #read local file path
     global script_folder
     script_folder = Path(__file__).parent
-    
+
     #Setup Streamlit
     st.set_page_config(page_title="Stockholm Map", layout="wide")
     st.markdown(
