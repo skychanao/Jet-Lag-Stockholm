@@ -107,6 +107,7 @@ def main():
     zoo(m)
     aquarium(m)
     golf(m)
+    museum(m)
 
     #Seeking Tooks
     draw_radar(m)
@@ -135,7 +136,6 @@ def main():
 
     st_folium(m,
         use_container_width=True,
-        height=900
     )
 
 
@@ -522,6 +522,28 @@ def golf(m):
         ),
         show = False
     ).add_to(m)
+
+def museum(m):
+    raw_museums = gpd.read_file(script_folder / "museums.geojson")
+    golf_courses = clean_geometry(raw_museums)
+    golf_courses['label'] = golf_courses['label'].str.split(' - ').str[0].str.strip()
+
+    folium.GeoJson(
+        golf_courses,
+        name = "Museums",
+        marker=folium.Marker(
+            icon=folium.Icon(
+                color ='orange',
+                icon='university', 
+                prefix='fa')
+        ),
+        popup=folium.GeoJsonPopup(
+            fields = ['label'],
+            labels=False
+        ),
+        show = False
+    ).add_to(m)
+
 
 #function to drop NULL values
 def clean_geometry(gdf):

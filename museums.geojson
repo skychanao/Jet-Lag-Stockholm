@@ -1,0 +1,252 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.08650518,
+          59.31788274
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Fotografiska - Stadsgårdshamnen 22, 116 45 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0708453,
+          59.3196455
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Stockholm City Museum - Ryssgården, 116 46 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0707553,
+          59.3252605
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Nobelprijsmuseum - Stortorget 2, 103 16 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0730639,
+          59.3266764
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Livrustkammaren - Slottsbacken 3, 111 30 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0843838,
+          59.3262147
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Moderna museet - Exercisplan 4, 111 49 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0781718,
+          59.3284828
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Nationalmuseum - Södra Blasieholmshamnen 2, 111 48 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.067394,
+          59.329567
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Medelhavsmuseet - Fredsgatan 2, 111 52 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.074519,
+          59.333237
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "The Hallwyl Museum - Hamngatan 4, 111 47 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.063335,
+          59.334393
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Paradox Museum - Sergels Torg 20, 111 57 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0802077,
+          59.3347516
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Army Museum - Riddargatan 13, 114 51 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0900605,
+          59.3346828
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Statelijk historisch museum - Narvavägen 13-17, 114 60 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.1058559,
+          59.3263233
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Skansen - Djurgårdsslätten 49-51, 115 21 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.122433,
+          59.358681
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Millesgården Museum - Herserudsvägen 32, 181 50 Lidingö, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0539798,
+          59.3689684
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Naturhistoriska riksmuseet - Frescativägen 40, 114 18 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.115739,
+          59.332678
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Maritime Museum - Djurgårdsbrunnsvägen 24, 115 27 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.11900684,
+          59.33245056
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Museum of Technology - Museivägen 7, 115 27 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0965507,
+          59.3249094
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "ABBA: The Museum - Djurgårdsvägen 68, 115 21 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.095129,
+          59.326614
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "The Viking Museum - Djurgårdsstrand 15, 115 21 Stockholm, Sweden"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          18.0913687,
+          59.3280803
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "label": "Vasa Museum - Galärvarvsvägen 14, 115 21 Stockholm, Sweden"
+      }
+    }
+  ]
+}
