@@ -6,3 +6,4 @@ pandas
 shapely
 requests
 streamlit_geolocation
+numpy

@@ -11,6 +11,7 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Polygon, shape, Point
 
+import numpy as np
 
 import folium
 import folium.plugins
@@ -41,18 +42,7 @@ def main():
 
     #Setup Streamlit
     st.set_page_config(page_title="Stockholm Map", layout="wide")
-    st.markdown(
-        """
-        <style>
-        /* Prevent Streamlit from making elements stale/gray during reruns */
-        div[data-testid="stElementContainer"], iframe {
-            opacity: 1 !important;
-            transition: none !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+
 
     #Streamlit Features
     streamlit_features()
@@ -111,6 +101,7 @@ def main():
 
     #Seeking Tooks
     draw_radar(m)
+    draw_thermometer(m)
     
     
 
@@ -141,69 +132,100 @@ def main():
 
     #Functions to plop the cities features
 
-# def playableArea(m):
-#     range = gpd.read_file(r"E:\TUE\Projects\Jet-Lag-Stockholm\45min.geojson")
-
-#     folium.GeoJson(
-#         range,
-#         name = "45min distance",
-#             style_function=lambda x: {
-#             'fillColor': 'green',
-#             'color': 'black',
-#             'weight': 3
-#         },
-#         show = True
-#     ).add_to(m)
-
 def streamlit_features():
 
     if "radars" not in st.session_state:
         st.session_state.radars = []
 
+    if "thermometer" not in st.session_state:
+        st.session_state.thermometer = []
+
+    error_placeholder = st.empty()
+
     # read user input
     with st.sidebar:
-        st.header("Radar")
-        
-        location = streamlit_geolocation()
 
-        def copy_to_text_box():
+        location = streamlit_geolocation()
+        tab_radar, tab_therm = st.tabs(["Radar", "Thermometer"])
+
+        #Copy auto-filled GPS coordinate into text box
+        def copy_to_text_box(target_key):
             if location['latitude'] is not None and location['longitude'] is not None:
                 #Format Number
-                st.session_state.coord_input = f"{location['latitude']}, {location['longitude']}"
+                st.session_state[target_key] = f"{location['latitude']}, {location['longitude']}"
             else:
                 st.warning("Still searching for GPS...")
-        
-        st.button("Autofill Coordinates", on_click=copy_to_text_box, use_container_width=True)
 
-        coordinate = st.text_input(label = "Coordinate", placeholder = "lat, lon",key="coord_input")
-
-        radius = st.number_input(label = "Radius", placeholder = "x (km)", step=0.5, min_value=0.0)
-        radar_type = st.radio("Radar Type", ["Hit", "Miss"])
-
-
-
-    #read coordinate
-    if "," in coordinate:
-        parts = coordinate.split(',')
-        
-        try:
-            latitude = float(parts[0].strip())
-            longitude = float(parts[1].strip())
+        #radar Tab
+        with tab_radar:
             
-        except ValueError:
-            st.sidebar.error("Error: Please only type numbers.")
+            st.button("Autofill Coordinates", on_click=copy_to_text_box, args=("coord_input",), use_container_width=True)
 
-    if st.sidebar.button("Plot Radar", use_container_width=True):
-        st.session_state.radars.append({
-                "lat": latitude,
-                "lon": longitude,
-                "size": radius,
-                "type": radar_type
-            })
+            coordinate = st.text_input(label = "Coordinate", placeholder = "lat, lon",key="coord_input")
+            radius = st.number_input(label = "Radius", placeholder = "x (km)", step=0.5, min_value=0.0)
+            radar_type = st.radio("Radar Type", ["Hit", "Miss"])
 
-    if st.sidebar.button("Undo Radar", use_container_width=True):
-        if st.session_state.radars:
-            st.session_state.radars.pop() # Removes the last drawn radar   
+
+            if st.button("Plot Radar", use_container_width=True):
+                #Read Coordinates
+                latitude = -99999.99
+                longitude = -99999.99
+                updated_R = False
+                try:
+                    latitude,longitude = read_coord(coordinate)    
+                    updated_R = True
+                except TypeError:
+                    error_placeholder.error("Error: Invalid RADAR Input.")
+                if updated_R:
+                    st.session_state.radars.append({
+                            "lat": latitude,
+                            "lon": longitude,
+                            "size": radius,
+                            "type": radar_type
+                        })
+
+            if st.button("Undo Radar", use_container_width=True):
+                if st.session_state.radars:
+                    st.session_state.radars.pop() # Removes the last drawn radar   
+        
+        #Termometer Tab
+        with  tab_therm:
+
+            st.button("Autofill Starting Point", on_click=copy_to_text_box, args=("coord_start",), use_container_width=True)
+            st.button("Autofill Ending Point", on_click=copy_to_text_box,args=("coord_end",), use_container_width=True)
+
+            start = st.text_input(label = "Starting Point", placeholder = "lat, lon",key="coord_start")
+            end = st.text_input(label = "End Point", placeholder = "lat, lon",key="coord_end")
+            therm_type = st.radio("Result", ["Hotter", "Colder"])
+
+            if st.button("Plot Thermometer", use_container_width=True):
+                #Read Coordinates
+                start_latitude = -99999.99
+                start_longitude = -99999.99
+                end_latitude = -99999.99
+                end_longitude = -99999.99
+                updated_T = False
+                try:
+                    start_latitude, start_longitude = read_coord(start)
+                    end_latitude, end_longitude = read_coord(end)
+                    updated_T = True
+                except TypeError:
+                    error_placeholder.error("Error: Invalid THERMOMETER Input.")
+                if updated_T:
+                    st.session_state.thermometer.append({
+                        "start_lat": start_latitude,
+                        "start_lon": start_longitude,
+                        "end_lat": end_latitude,
+                        "end_lon": end_longitude,
+                        "type": therm_type
+                    })
+
+            if st.button("Undo Thermometer", use_container_width=True):
+                if st.session_state.thermometer:
+                    st.session_state.thermometer.pop() # Removes the last drawn radar   
+
+
+
 
 def municipalities(m):
     
@@ -559,8 +581,7 @@ def clean_geometry(gdf):
 def draw_radar(m):
 
     for r in st.session_state.radars:
-    
-        #Read Circle data
+        #Read Circle Input
         center = Point(r["lon"], r["lat"])  
         circle_gdf = gpd.GeoDataFrame(geometry=[center], crs="EPSG:4326")
         circle_meters = circle_gdf.to_crs(epsg=3006) 
@@ -595,6 +616,68 @@ def draw_radar(m):
                 },
                 control=False
             ).add_to(m)
+    
+
+def draw_thermometer(m):
+
+    for r in st.session_state.thermometer:
+        # 1. Read Termometer Input as GPS (Degrees)
+        start_gps = Point(r["start_lon"], r["start_lat"])  
+        end_gps = Point(r["end_lon"], r["end_lat"])  
+        result = r["type"]
+
+        # 2. CRITICAL FIX: Convert Degrees to Meters (EPSG:3006) before doing math!
+        points_gdf = gpd.GeoDataFrame(geometry=[start_gps, end_gps], crs="EPSG:4326")
+        points_meters = points_gdf.to_crs(epsg=3006)
+        
+        start = points_meters.geometry.iloc[0]
+        end = points_meters.geometry.iloc[1]
+
+        # 3. compute perpendicular line (now safely in meters)
+        Mx, My = (start.x + end.x)/2, (start.y + end.y)/2        
+        
+        dx, dy = end.x - start.x, end.y - start.y
+        length = np.hypot(dx, dy)
+        
+        if length == 0: #Same points
+            continue # FIX: Use continue so we don't break the whole map loop!
+            
+        ux, uy = dx / length, dy / length # Normalize the vector 
+        nx, ny = -uy, ux # Find pependicular Vector
+
+        if result == "Hotter":
+            ex, ey = -ux, -uy
+        else:
+            ex, ey = ux, uy
+            
+        DIST = 100000 # Draw Large polygon (100km)
+        
+        p1 = (Mx + nx * DIST, My + ny * DIST) # point along perpendicular line
+        p2 = (Mx - nx * DIST, My - ny * DIST) # point to edge of map
+        p3 = (p2[0] + ex * DIST, p2[1] + ey * DIST)
+        p4 = (p1[0] + ex * DIST, p1[1] + ey * DIST)
+        
+        eliminated_poly = Polygon([p1, p2, p3, p4]).buffer(0)
+        
+        # 4. Create and plot eliminated area (Converting back to Degrees)
+        poly_gdf = gpd.GeoDataFrame(geometry=[eliminated_poly], crs="EPSG:3006")
+        eliminated_area = poly_gdf.to_crs(epsg=4326).geometry.iloc[0]
+        
+        folium.GeoJson(
+            eliminated_area,
+            name="Thermometer Miss",
+            style_function=lambda x: {
+                'fillColor': '#3388ff',
+                'color': '#3388ff',       
+                'weight': 3,
+                'fillOpacity': 0.4
+            },
+            control=False
+        ).add_to(m)
+
+        
+
+
 
 def clip_tool(feature, mask_area):
     if feature.empty or mask_area.geometry.iloc[0].is_empty:
@@ -602,6 +685,18 @@ def clip_tool(feature, mask_area):
     clipped_data = gpd.clip(feature, mask_area)
     return clipped_data
 
+#Streamlit Functions
+
+#Format coordinate
+def read_coord(coord):
+    if "," in coord:
+        parts = coord.split(',')
+        try:
+            latitude = float(parts[0].strip())
+            longitude = float(parts[1].strip())
+        except ValueError:
+            st.sidebar.error("Error: Please only type numbers.")
+        return latitude, longitude
 
 if __name__ == "__main__":
     main()
