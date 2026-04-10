@@ -1,3 +1,4 @@
+from shapely import is_empty
 import streamlit as st
 from streamlit_folium import st_folium
 from streamlit_geolocation import streamlit_geolocation 
@@ -9,7 +10,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
-from shapely.geometry import Polygon, shape, Point
+from shapely.geometry import Polygon, shape, Point, LineString
 
 import numpy as np
 
@@ -43,10 +44,8 @@ def main():
     #Setup Streamlit
     st.set_page_config(page_title="Stockholm Map", layout="wide")
 
-
     #Streamlit Features
     streamlit_features()
-
     #initalize map titles
     min_lon, max_lon = 17.70891393315022, 18.536390448353895 #gotta increase these 
     min_lat, max_lat = 59.216339768502074, 59.4527626869623
@@ -136,7 +135,6 @@ def streamlit_features():
 
     if "radars" not in st.session_state:
         st.session_state.radars = []
-
     if "thermometer" not in st.session_state:
         st.session_state.thermometer = []
 
@@ -162,7 +160,7 @@ def streamlit_features():
             st.button("Autofill Coordinates", on_click=copy_to_text_box, args=("coord_input",), use_container_width=True)
 
             coordinate = st.text_input(label = "Coordinate", placeholder = "lat, lon",key="coord_input")
-            radius = st.number_input(label = "Radius", placeholder = "x (km)", step=0.5, min_value=0.0)
+            radius = st.number_input(label = "Radius(km)", placeholder = "x (km)", step=0.5, min_value=0.0)
             radar_type = st.radio("Radar Type", ["Hit", "Miss"])
 
 
@@ -177,11 +175,14 @@ def streamlit_features():
                 except TypeError:
                     error_placeholder.error("Error: Invalid RADAR Input.")
                 if updated_R:
+                    radar_number = len(st.session_state.radars) + 1
+                    radar_name = f"Radar {radar_number}"
                     st.session_state.radars.append({
                             "lat": latitude,
                             "lon": longitude,
                             "size": radius,
-                            "type": radar_type
+                            "type": radar_type,
+                            "name": radar_name
                         })
 
             if st.button("Undo Radar", use_container_width=True):
@@ -211,21 +212,22 @@ def streamlit_features():
                     updated_T = True
                 except TypeError:
                     error_placeholder.error("Error: Invalid THERMOMETER Input.")
+
                 if updated_T:
+                    thermometer_number = len(st.session_state.thermometer) + 1
+                    thermometer_name = f"{thermometer_number}"  
                     st.session_state.thermometer.append({
                         "start_lat": start_latitude,
                         "start_lon": start_longitude,
                         "end_lat": end_latitude,
                         "end_lon": end_longitude,
-                        "type": therm_type
+                        "type": therm_type,
+                        "name": thermometer_name
                     })
 
             if st.button("Undo Thermometer", use_container_width=True):
                 if st.session_state.thermometer:
-                    st.session_state.thermometer.pop() # Removes the last drawn radar   
-
-
-
+                    st.session_state.thermometer.pop() # Removes the last drawn radar
 
 def municipalities(m):
     
@@ -580,13 +582,28 @@ def clean_geometry(gdf):
 # Tools
 def draw_radar(m):
 
+    radar_list = folium.FeatureGroup(name = "Radar Points")
+
     for r in st.session_state.radars:
         #Read Circle Input
         center = Point(r["lon"], r["lat"])  
         circle_gdf = gpd.GeoDataFrame(geometry=[center], crs="EPSG:4326")
         circle_meters = circle_gdf.to_crs(epsg=3006) 
         circle_shape = circle_meters.buffer(r["size"] * 1000).to_crs(epsg=4326).geometry.iloc[0]
-        inverted_mask = game_area.difference(circle_shape)        
+        inverted_mask = game_area.difference(circle_shape)     
+        
+        folium.Marker(
+            location=[r["lat"], r["lon"]],
+            popup= r["name"],
+            icon=folium.Icon(
+                color="green", 
+                icon="crosshairs", 
+                prefix="fa"
+            )
+        ).add_to(radar_list)
+
+        radar_list.add_to(m)
+
         #If radar is hit, keep only radar circle unfilled
         if r["type"] == "Hit":
             #keep only radar area unfilled
@@ -620,49 +637,74 @@ def draw_radar(m):
 
 def draw_thermometer(m):
 
-    for r in st.session_state.thermometer:
-        # 1. Read Termometer Input as GPS (Degrees)
-        start_gps = Point(r["start_lon"], r["start_lat"])  
-        end_gps = Point(r["end_lon"], r["end_lat"])  
-        result = r["type"]
+    thermometer_list = folium.FeatureGroup(name="Thermometer Points")
 
-        # 2. CRITICAL FIX: Convert Degrees to Meters (EPSG:3006) before doing math!
-        points_gdf = gpd.GeoDataFrame(geometry=[start_gps, end_gps], crs="EPSG:4326")
+    for r in st.session_state.thermometer:
+        # Read Termometer Input as GPS (Degrees)
+        start_point = Point(r["start_lon"], r["start_lat"])  
+        end_point = Point(r["end_lon"], r["end_lat"])  
+        result = r["type"]
+        counter = r["name"]
+
+        # Convert Values to meters
+        points_gdf = gpd.GeoDataFrame(geometry=[start_point, end_point], crs="EPSG:4326")
         points_meters = points_gdf.to_crs(epsg=3006)
         
         start = points_meters.geometry.iloc[0]
         end = points_meters.geometry.iloc[1]
 
-        # 3. compute perpendicular line (now safely in meters)
-        Mx, My = (start.x + end.x)/2, (start.y + end.y)/2        
-        
-        dx, dy = end.x - start.x, end.y - start.y
-        length = np.hypot(dx, dy)
-        
-        if length == 0: #Same points
-            continue # FIX: Use continue so we don't break the whole map loop!
-            
-        ux, uy = dx / length, dy / length # Normalize the vector 
-        nx, ny = -uy, ux # Find pependicular Vector
+        # Compute Mid Point
+        Mx, My = (start.x + end.x) / 2, (start.y + end.y) / 2
+        M = Point(Mx, My)
 
         if result == "Hotter":
-            ex, ey = -ux, -uy
+            dx = start.x - end.x
+            dy = start.y - end.y
         else:
-            ex, ey = ux, uy
+            dx = end.x - start.x
+            dy = end.y - start.y
             
-        DIST = 100000 # Draw Large polygon (100km)
+        # Normalize the ray direction
+        length = np.hypot(dx, dy)
+        if length == 0: 
+            continue
         
-        p1 = (Mx + nx * DIST, My + ny * DIST) # point along perpendicular line
-        p2 = (Mx - nx * DIST, My - ny * DIST) # point to edge of map
-        p3 = (p2[0] + ex * DIST, p2[1] + ey * DIST)
-        p4 = (p1[0] + ex * DIST, p1[1] + ey * DIST)
-        
-        eliminated_poly = Polygon([p1, p2, p3, p4]).buffer(0)
-        
-        # 4. Create and plot eliminated area (Converting back to Degrees)
+        # Compute x,y coordinate of edge of rectangle
+        DIST = 25000 
+        far_x = Mx + (dx / length) * DIST
+        far_y = My + (dy / length) * DIST
+        far_point = Point(far_x, far_y)
+
+        center_line = LineString([M, far_point])
+        eliminated_poly = center_line.buffer(DIST, cap_style=2)
         poly_gdf = gpd.GeoDataFrame(geometry=[eliminated_poly], crs="EPSG:3006")
-        eliminated_area = poly_gdf.to_crs(epsg=4326).geometry.iloc[0]
+        unclipped_gdf = poly_gdf.to_crs(epsg=4326)
+
+        clipped_gdf = clip_tool(unclipped_gdf,game_area)
+        eliminated_area = clipped_gdf.to_crs(epsg=4326).geometry.iloc[0]
         
+        folium.Marker(
+            location=[r["start_lat"], r["start_lon"]],
+            popup=f"Thermometer Start "+ counter,
+            icon=folium.Icon(
+                color="green", 
+                icon="temperature-empty", 
+                prefix="fa"
+            )
+        ).add_to(thermometer_list)
+
+        folium.Marker(
+            location=[r["end_lat"], r["end_lon"]],
+            popup=f"Thermometer End " + counter,
+            icon=folium.Icon(
+                color="red", 
+                icon="temperature-full", 
+                prefix="fa"
+            )
+        ).add_to(thermometer_list)
+
+        thermometer_list.add_to(m)
+
         folium.GeoJson(
             eliminated_area,
             name="Thermometer Miss",
@@ -675,17 +717,13 @@ def draw_thermometer(m):
             control=False
         ).add_to(m)
 
+
         
-
-
-
 def clip_tool(feature, mask_area):
-    if feature.empty or mask_area.geometry.iloc[0].is_empty:
-        return mask_area.iloc[0:0]  
-    clipped_data = gpd.clip(feature, mask_area)
-    return clipped_data
+    if not feature.empty or mask_area.empty:
+        clipped_data = gpd.clip(feature, mask_area)
+        return clipped_data
 
-#Streamlit Functions
 
 #Format coordinate
 def read_coord(coord):
