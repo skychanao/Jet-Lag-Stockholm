@@ -11,6 +11,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Polygon, shape, Point, LineString
+from shapely.ops import unary_union
 
 import numpy as np
 
@@ -98,9 +99,10 @@ def main():
     golf(m)
     museum(m)
 
-    #Seeking Tooks
-    draw_radar(m)
-    draw_thermometer(m)
+    #Seeking Tools
+    draw_seeking_tools(m)
+    #draw_radar(m)
+    #draw_thermometer(m)
     
     
 
@@ -579,11 +581,19 @@ def clean_geometry(gdf):
     gdf = gdf[gdf.geometry.type.isin(supported_shapes)]
     return gdf
 
-# Tools
-def draw_radar(m):
+        
+def clip_tool(feature, mask_area):
+    if not feature.empty or mask_area.empty:
+        clipped_data = gpd.clip(feature, mask_area)
+        return clipped_data
 
-    radar_list = folium.FeatureGroup(name = "Radar Points")
+def draw_seeking_tools(m):
+    radar_list = folium.FeatureGroup(name="Radars")
+    thermometer_list = folium.FeatureGroup(name="Thermometers")
+    
+    shapes_to_merge = []
 
+    #read Radar inputs
     for r in st.session_state.radars:
         #Read Circle Input
         center = Point(r["lon"], r["lat"])  
@@ -592,6 +602,14 @@ def draw_radar(m):
         circle_shape = circle_meters.buffer(r["size"] * 1000).to_crs(epsg=4326).geometry.iloc[0]
         inverted_mask = game_area.difference(circle_shape)     
         
+        if r["type"] == "Hit":
+            # Eliminate everything outside the circle
+            shapes_to_merge.append(inverted_mask)
+        elif r["type"] == "Miss":
+            # Fill circle
+            shapes_to_merge.append(circle_shape)
+
+        #Add marker for center point of Radar
         folium.Marker(
             location=[r["lat"], r["lon"]],
             popup= r["name"],
@@ -601,44 +619,10 @@ def draw_radar(m):
                 prefix="fa"
             )
         ).add_to(radar_list)
-
+    
         radar_list.add_to(m)
 
-        #If radar is hit, keep only radar circle unfilled
-        if r["type"] == "Hit":
-            #keep only radar area unfilled
-            folium.GeoJson(
-                inverted_mask,
-                style_function=lambda x: {
-                    'fillColor': '#3388ff',
-                    'color': '#3388ff',       
-                    'weight': 3,
-                    'fillOpacity': 0.4
-                },
-                control=False
-            ).add_to(m)
-
-        #If radar is a miss, fill the circle
-
-        elif r["type"] == "Miss":
-            #plot a filled cicle
-            folium.GeoJson(
-                circle_shape,
-                name="Miss Mask",
-                style_function=lambda x: {
-                    'fillColor': '#3388ff',
-                    'color': '#3388ff',       
-                    'weight': 3,
-                    'fillOpacity': 0.4
-                },
-                control=False
-            ).add_to(m)
-    
-
-def draw_thermometer(m):
-
-    thermometer_list = folium.FeatureGroup(name="Thermometer Points")
-
+    #read Thermomter inputs
     for r in st.session_state.thermometer:
         # Read Termometer Input as GPS (Degrees)
         start_point = Point(r["start_lon"], r["start_lat"])  
@@ -683,6 +667,9 @@ def draw_thermometer(m):
         clipped_gdf = clip_tool(unclipped_gdf,game_area)
         eliminated_area = clipped_gdf.to_crs(epsg=4326).geometry.iloc[0]
         
+        shapes_to_merge.append(eliminated_area)
+        
+        #Add markers to start, end point of Thermometer
         folium.Marker(
             location=[r["start_lat"], r["start_lon"]],
             popup=f"Thermometer Start "+ counter,
@@ -692,7 +679,6 @@ def draw_thermometer(m):
                 prefix="fa"
             )
         ).add_to(thermometer_list)
-
         folium.Marker(
             location=[r["end_lat"], r["end_lon"]],
             popup=f"Thermometer End " + counter,
@@ -705,9 +691,18 @@ def draw_thermometer(m):
 
         thermometer_list.add_to(m)
 
+    #Merge eliminated area and plop it
+    if shapes_to_merge:
+        # merge interesection shapes
+        master_mask = unary_union(shapes_to_merge)
+        game_board_shape = game_area.geometry.union_all()
+        # Clip mask to game area
+        clean_master_mask = master_mask.intersection(game_board_shape)
+
+        # Draw the single, continuous shape
         folium.GeoJson(
-            eliminated_area,
-            name="Thermometer Miss",
+            clean_master_mask,
+            name="Master Fog of War",
             style_function=lambda x: {
                 'fillColor': '#3388ff',
                 'color': '#3388ff',       
@@ -718,11 +713,6 @@ def draw_thermometer(m):
         ).add_to(m)
 
 
-        
-def clip_tool(feature, mask_area):
-    if not feature.empty or mask_area.empty:
-        clipped_data = gpd.clip(feature, mask_area)
-        return clipped_data
 
 
 #Format coordinate
